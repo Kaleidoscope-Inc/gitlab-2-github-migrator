@@ -18,15 +18,15 @@ def migrator(gitlab_token, gitlab_groupid, github_username, github_pat, github_o
     group = gl.groups.get(gitlab_groupid)
     for gl_project in group.projects.list(iterator=True):
         try:
-            gh.get_repo(gl_project.name)
-            print(f'{gl_project.name} already exists on GitHub. Skipping mirroring.')
-        except (UnknownObjectException):
+            gh.get_organization(github_org).get_repo(gl_project.path)
+            print(f'{gl_project.path} already exists on GitHub. Skipping mirroring.')
+        except UnknownObjectException:
             print(
-                f'{gl_project.name} does not exist on GitHub. Creating and mirroring.')
+                f'{gl_project.path} does not exist on GitHub. Creating and mirroring.')
             gh.get_organization(github_org).create_repo(
-                gl_project.name, private=True)
+                gl_project.path, private=True)
             project_obj = gl.projects.get(gl_project.id)
-            project_obj.remote_mirrors.create({'url': f'https://{github_username}:{github_pat}@github.com/{github_org}/{gl_project.name}.git',
+            project_obj.remote_mirrors.create({'url': f'https://{github_username}:{github_pat}@github.com/{github_org}/{gl_project.path}.git',
                                                'enabled': True})
 
 
